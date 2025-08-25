@@ -181,6 +181,28 @@ namespace LinearProgrammingSolver.Models
                 default: return "Continuous";
             }
         }
+        // PART 3: BRANCH AND BOUND
+        public LinearProgram Clone()
+        {
+            return new LinearProgram
+            {
+                IsMaximization = this.IsMaximization,
+                Variables = this.Variables.Select(v => new Variable
+                {
+                    Index = v.Index,
+                    Coefficient = v.Coefficient,
+                    Type = v.Type,
+                    Value = v.Value
+                }).ToList(),
+                Constraints = this.Constraints.Select(c => new Constraint
+                {
+                    Coefficients = new List<double>(c.Coefficients),
+                    Relation = c.Relation,
+                    Rhs = c.Rhs,
+                    Slack = c.Slack
+                }).ToList()
+            };
+        }
 
         public enum Relation { LessThanOrEqual, GreaterThanOrEqual, Equal }
         public enum VariableType { NonNegative, NonPositive, Unrestricted, Integer, Binary, Continuous }

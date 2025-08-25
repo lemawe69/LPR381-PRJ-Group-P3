@@ -13,6 +13,12 @@ namespace LinearProgrammingSolver.Algorithms
             var solution = new Solution();
             var tableau = new DualTableau(program);
 
+            // Store tableau metadata in Solution
+            solution.VariableCount = program.Variables.Count;
+            solution.SlackCount = program.Constraints.Count(c => c.Relation == LinearProgram.Relation.LessThanOrEqual);
+            solution.ExcessCount = program.Constraints.Count(c => c.Relation == LinearProgram.Relation.GreaterThanOrEqual);
+            solution.ArtificialCount = program.Constraints.Count(c => c.Relation == LinearProgram.Relation.Equal);
+
             if (!program.IsMaximization)
                 solution.AddMessage("Converted minimization problem to maximization by negating objective");
 
@@ -69,6 +75,12 @@ namespace LinearProgrammingSolver.Algorithms
             solution.VariableValues = tableau.GetSolution();
             solution.AddStep("Final Tableau:", tableau.ToString());
 
+            // Store the final tableau matrix
+            solution.FinalTableau = new double[tableau.Rows, tableau.Cols];
+            for (int i = 0; i < tableau.Rows; i++)
+                for (int j = 0; j < tableau.Cols; j++)
+                    solution.FinalTableau[i, j] = tableau.GetValue(i, j);
+
             return solution;
         }
     }
@@ -80,21 +92,22 @@ namespace LinearProgrammingSolver.Algorithms
         private readonly int _cols;
         private readonly LinearProgram _program;
         public int IterationCount { get; private set; }
-
         private readonly int _slackCount;
         private readonly int _excessCount;
         private readonly int _artificialCount;
-
         private const double TOL = 1e-6;
+
+        public int Rows => _rows;
+        public int Cols => _cols;
 
         public DualTableau(LinearProgram program)
         {
             _program = program ?? throw new ArgumentNullException(nameof(program));
-            _slackCount = _program.Constraints.Count(c => c.Relation == LinearProgram.Relation.LessThanOrEqual);
-            _excessCount = _program.Constraints.Count(c => c.Relation == LinearProgram.Relation.GreaterThanOrEqual);
-            _artificialCount = _program.Constraints.Count(c => c.Relation == LinearProgram.Relation.Equal);
-            _rows = _program.Constraints.Count + 1;
-            _cols = _program.Variables.Count + _slackCount + _excessCount + _artificialCount + 1;
+            _slackCount = program.Constraints.Count(c => c.Relation == LinearProgram.Relation.LessThanOrEqual);
+            _excessCount = program.Constraints.Count(c => c.Relation == LinearProgram.Relation.GreaterThanOrEqual);
+            _artificialCount = program.Constraints.Count(c => c.Relation == LinearProgram.Relation.Equal);
+            _rows = program.Constraints.Count + 1;
+            _cols = program.Variables.Count + _slackCount + _excessCount + _artificialCount + 1;
             _matrix = new double[_rows, _cols];
             IterationCount = 0;
             InitializeTableau();
@@ -176,7 +189,7 @@ namespace LinearProgrammingSolver.Algorithms
 
             for (int j = 0; j < _cols - 1; j++)
             {
-                if (_matrix[pivotRow, j] < -TOL) // Only negative coefficients
+                if (_matrix[pivotRow, j] < -TOL)
                 {
                     double ratio = _matrix[0, j] / _matrix[pivotRow, j];
                     if (ratio < minRatio)
@@ -256,77 +269,77 @@ namespace LinearProgrammingSolver.Algorithms
             return _program.IsMaximization ? _matrix[0, _cols - 1] : -_matrix[0, _cols - 1];
         }
 
+        public double GetValue(int row, int col) => _matrix[row, col];
+
         public Dictionary<string, double> GetSolution()
         {
             var solution = new Dictionary<string, double>();
 
+            // Decision variables
             for (int j = 0; j < _program.Variables.Count; j++)
             {
-                bool isBasic = false;
-                int basicRow = -1;
-
+                double value = 0.0;
                 for (int i = 1; i < _rows; i++)
                 {
                     if (Math.Abs(_matrix[i, j] - 1) < TOL)
                     {
-                        bool allZeros = true;
+                        bool isBasic = true;
                         for (int k = 1; k < _rows; k++)
                         {
                             if (k != i && Math.Abs(_matrix[k, j]) > TOL)
                             {
-                                allZeros = false;
+                                isBasic = false;
                                 break;
                             }
                         }
-                        if (allZeros)
+                        if (isBasic)
                         {
-                            isBasic = true;
-                            basicRow = i;
+                            value = _matrix[i, _cols - 1];
                             break;
                         }
                     }
                 }
-
-                solution[$"x{_program.Variables[j].Index}"] = isBasic ? _matrix[basicRow, _cols - 1] : 0;
+                solution[$"x{_program.Variables[j].Index}"] = value;
             }
 
-            // Slack / Excess / Artificial
-            for (int j = _program.Variables.Count; j < _cols - 1; j++)
-            {
-                bool isBasic = false;
-                int basicRow = -1;
+            // Slack, excess, artificial variables
+            int slackStart = _program.Variables.Count;
+            int excessStart = slackStart + _slackCount;
+            int artificialStart = excessStart + _excessCount;
 
+            for (int j = slackStart; j < _cols - 1; j++)
+            {
+                double value = 0.0;
                 for (int i = 1; i < _rows; i++)
                 {
                     if (Math.Abs(_matrix[i, j] - 1) < TOL)
                     {
-                        bool allZeros = true;
+                        bool isBasic = true;
                         for (int k = 1; k < _rows; k++)
                         {
                             if (k != i && Math.Abs(_matrix[k, j]) > TOL)
                             {
-                                allZeros = false;
+                                isBasic = false;
                                 break;
                             }
                         }
-                        if (allZeros)
+                        if (isBasic)
                         {
-                            isBasic = true;
-                            basicRow = i;
+                            value = _matrix[i, _cols - 1];
                             break;
                         }
                     }
                 }
 
                 string varName;
-                if (j < _program.Variables.Count + _slackCount)
-                    varName = $"s{j - _program.Variables.Count + 1}";
-                else if (j < _program.Variables.Count + _slackCount + _excessCount)
-                    varName = $"e{j - _program.Variables.Count - _slackCount + 1}";
+                if (j < excessStart)
+                    varName = $"s{j - slackStart + 1}";
+                else if (j < artificialStart)
+                    varName = $"e{j - excessStart + 1}";
                 else
-                    varName = $"a{j - _program.Variables.Count - _slackCount - _excessCount + 1}";
+                    varName = $"a{j - artificialStart + 1}";
 
-                solution[varName] = isBasic ? _matrix[basicRow, _cols - 1] : 0;
+                solution[varName] = value;
             }
 
             return solution;

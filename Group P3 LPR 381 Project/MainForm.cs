@@ -81,10 +81,6 @@ namespace LinearProgrammingSolver
             btnSolveKnapsack = new Button { Text = "Branch and Bound Knapsack Algorithm", Width = 130, TabIndex = 6 };
             btnExportResults = new Button { Text = "Export Results", Width = 120, TabIndex = 7 };
 
-            btnSolveBranchAndBound.Visible = false; // Hide initially
-            btnSolveCuttingPlane.Visible = false; // Hide initially
-            btnSolveKnapsack.Visible = false; // Hide initially
-
             openFileDialog = new OpenFileDialog
             {
                 Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
@@ -222,8 +218,6 @@ namespace LinearProgrammingSolver
 
                 txtSolutionOutput.Text += solution.ToString();
 
-                btnSolveBranchAndBound.Visible = true;
-
             }
             catch (Exception ex)
             {
@@ -289,9 +283,35 @@ namespace LinearProgrammingSolver
             }
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
-        private void BtnSolveBranchAndBound_Click(object sender, EventArgs e)
+        private async void BtnSolveBranchAndBound_Click(object sender, EventArgs e)
         {
-            
+            if (string.IsNullOrWhiteSpace(txtProblemInput.Text))
+            {
+                MessageBox.Show("Please load a problem first.", "Warning",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                btnSolveBranchAndBound.Enabled = false;
+                txtSolutionOutput.Text = "Running Branch and Bound algorithm...\n\n";
+
+                var program = LinearProgram.Parse(txtProblemInput.Text);
+                var solver = new BranchAndBound();
+                var solution = await Task.Run(() => solver.Solve(program));
+
+                txtSolutionOutput.Text += solution.ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error solving problem: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnSolveBranchAndBound.Enabled = true;
+            }
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
         private void BtnSolveCuttingPlane_Click(object sender, EventArgs e)

@@ -9,6 +9,24 @@ namespace LinearProgrammingSolver.Models
         public Dictionary<string, double> VariableValues { get; set; } = new Dictionary<string, double>();
         public List<string> Steps { get; } = new List<string>();
         public List<string> Messages { get; } = new List<string>();
+        public double[,] FinalTableau { get; set; } // New property to store the final tableau matrix
+        public int VariableCount { get; set; } // To track number of decision variables
+        public int SlackCount { get; set; } // To track number of slack variables
+        public int ExcessCount { get; set; } // To track number of excess variables
+        public int ArtificialCount { get; set; } // To track number of artificial variables
+
+        public Solution()
+        {
+            Steps = new List<string>();
+            Messages = new List<string>();
+            VariableValues = null;
+            OptimalValue = 0;
+            FinalTableau = null;
+            VariableCount = 0;
+            SlackCount = 0;
+            ExcessCount = 0;
+            ArtificialCount = 0;
+        }
 
         public void AddStep(string title, string content)
         {
