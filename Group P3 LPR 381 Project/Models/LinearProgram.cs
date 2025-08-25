@@ -181,29 +181,29 @@ namespace LinearProgrammingSolver.Models
                 default: return "Continuous";
             }
         }
-    }
 
-    public enum Relation { LessThanOrEqual, GreaterThanOrEqual, Equal }
-    public enum VariableType { NonNegative, NonPositive, Unrestricted, Integer, Binary, Continuous }
+        public enum Relation { LessThanOrEqual, GreaterThanOrEqual, Equal }
+        public enum VariableType { NonNegative, NonPositive, Unrestricted, Integer, Binary, Continuous }
 
-    public class Variable
-    {
-        public int Index { get; set; }
-        public double Coefficient { get; set; }
-        public VariableType Type { get; set; }
-        public double Value { get; set; }
-    }
-
-    public class Constraint
-    {
-        public List<double> Coefficients { get; set; }
-        public Relation Relation { get; set; }
-        public double Rhs { get; set; }
-        public double Slack { get; set; }
-
-        public Constraint()
+        public class Variable
         {
-            Coefficients = new List<double>();
+            public int Index { get; set; }
+            public double Coefficient { get; set; }
+            public VariableType Type { get; set; }
+            public double Value { get; set; }
+        }
+
+        public class Constraint
+        {
+            public List<double> Coefficients { get; set; }
+            public Relation Relation { get; set; }
+            public double Rhs { get; set; }
+            public double Slack { get; set; }
+
+            public Constraint()
+            {
+                Coefficients = new List<double>();
+            }
         }
     }
 }

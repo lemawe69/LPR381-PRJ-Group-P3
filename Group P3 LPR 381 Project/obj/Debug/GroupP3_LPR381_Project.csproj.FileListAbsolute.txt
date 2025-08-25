@@ -26,3 +26,31 @@ C:\Users\brand.LEM\Documents\Belgium\Belgium 3de jaar\LPR 381\Repo\LPR381-PRJ-Gr
 C:\Users\brand.LEM\Documents\Belgium\Belgium 3de jaar\LPR 381\Repo\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Security.Cryptography.Xml.xml
 C:\Users\brand.LEM\Documents\Belgium\Belgium 3de jaar\LPR 381\Repo\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\GroupP3_.98378097.Up2Date
 C:\Users\brand.LEM\Documents\Belgium\Belgium 3de jaar\LPR 381\Repo\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\LinearProgrammingSolver.MainForm.resources
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\Group P3 LPR 381 Project.exe.config
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\Group P3 LPR 381 Project.exe
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\Group P3 LPR 381 Project.pdb
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\EPPlus.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\EPPlus.Interfaces.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\Microsoft.IO.RecyclableMemoryStream.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Buffers.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.ComponentModel.Annotations.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Memory.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Security.Cryptography.Xml.dll
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\EPPlus.xml
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\Microsoft.IO.RecyclableMemoryStream.xml
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Buffers.xml
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Memory.xml
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\bin\Debug\System.Security.Cryptography.Xml.xml
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\GroupP3_LPR381_Project.csproj.AssemblyReference.cache
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\Group P3 LPR 381 Project.exe.config
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\LinearProgrammingSolver.MainForm.resources
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\Group_P3_LPR_381_Project.Properties.Resources.resources
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\GroupP3_LPR381_Project.csproj.GenerateResource.cache
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\GroupP3_LPR381_Project.csproj.CoreCompileInputs.cache
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\GroupP3_.98378097.Up2Date
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\Group P3 LPR 381 Project.exe
+C:\Users\jeane\source\repos\LPR381-PRJ-Group-P3\Group P3 LPR 381 Project\obj\Debug\Group P3 LPR 381 Project.pdb

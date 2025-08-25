@@ -47,7 +47,7 @@ namespace LinearProgrammingSolver.Algorithms
         }
     }
 
-    public class Tableau
+    public partial class Tableau
     {
         private double[,] _matrix;
         private readonly int _rows;
@@ -87,6 +87,7 @@ namespace LinearProgrammingSolver.Algorithms
 
                 _matrix[i, _cols - 1] = constraint.Rhs;
             }
+
         }
 
         public bool IsOptimal()

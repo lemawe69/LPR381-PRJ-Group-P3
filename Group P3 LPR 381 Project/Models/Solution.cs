@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace LinearProgrammingSolver.Models
 {
@@ -12,6 +13,7 @@ namespace LinearProgrammingSolver.Models
         public void AddStep(string title, string content)
         {
             Steps.Add(string.Concat(title, "\n", content));
+
         }
 
         public void AddMessage(string message)

@@ -3,6 +3,9 @@ using LinearProgrammingSolver.Models;
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace LinearProgrammingSolver
@@ -12,6 +15,10 @@ namespace LinearProgrammingSolver
         private Button btnLoadProblem;
         private Button btnSolvePrimal;
         private Button btnSolveRevised;
+        private Button btnDualSimplex;
+        private Button btnSolveBranchAndBound;
+        private Button btnSolveCuttingPlane;
+        private Button btnSolveKnapsack;
         private Button btnExportResults;
         private TextBox txtProblemInput;
         private RichTextBox txtSolutionOutput;
@@ -60,14 +67,23 @@ namespace LinearProgrammingSolver
             txtSolutionOutput = new RichTextBox
             {
                 ReadOnly = true,
-                ScrollBars = RichTextBoxScrollBars.Vertical,
-                Dock = DockStyle.Fill
+                ScrollBars = RichTextBoxScrollBars.Both,
+                Dock = DockStyle.Fill,
+                WordWrap = false
             };
 
             btnLoadProblem = new Button { Text = "Load Problem", Width = 120, TabIndex = 0 };
             btnSolvePrimal = new Button { Text = "Primal Simplex", Width = 120, TabIndex = 1 };
-            btnSolveRevised = new Button { Text = "Revised Simplex", Width = 120, TabIndex = 2 };
-            btnExportResults = new Button { Text = "Export Results", Width = 120, TabIndex = 3 };
+            btnSolveRevised = new Button { Text = "Revised Simplex", Width = 130, TabIndex = 2 };
+            btnDualSimplex = new Button { Text = "Dual Simplex Algorithm", Width = 130, TabIndex = 3 };
+            btnSolveBranchAndBound = new Button { Text = "Branch and Bound Algorithm", Width = 130, TabIndex = 4 };
+            btnSolveCuttingPlane = new Button { Text = "Cutting Plane Algorithm", Width = 130, TabIndex = 5 };
+            btnSolveKnapsack = new Button { Text = "Branch and Bound Knapsack Algorithm", Width = 130, TabIndex = 6 };
+            btnExportResults = new Button { Text = "Export Results", Width = 120, TabIndex = 7 };
+
+            btnSolveBranchAndBound.Visible = false; // Hide initially
+            btnSolveCuttingPlane.Visible = false; // Hide initially
+            btnSolveKnapsack.Visible = false; // Hide initially
 
             openFileDialog = new OpenFileDialog
             {
@@ -84,6 +100,10 @@ namespace LinearProgrammingSolver
             btnLoadProblem.Click += BtnLoadProblem_Click;
             btnSolvePrimal.Click += BtnSolvePrimal_Click;
             btnSolveRevised.Click += BtnSolveRevised_Click;
+            btnDualSimplex.Click += BtnDualSimplex_Click;
+            btnSolveBranchAndBound.Click += BtnSolveBranchAndBound_Click;
+            btnSolveCuttingPlane.Click += BtnSolveCuttingPlane_Click;
+            btnSolveKnapsack.Click += BtnSolveKnapsack_Click;
             btnExportResults.Click += BtnExportResults_Click;
         }
 
@@ -99,18 +119,30 @@ namespace LinearProgrammingSolver
             panelControls.Controls.Add(btnLoadProblem);
             panelControls.Controls.Add(btnSolvePrimal);
             panelControls.Controls.Add(btnSolveRevised);
+            panelControls.Controls.Add(btnDualSimplex);
+            panelControls.Controls.Add(btnSolveBranchAndBound);
+            panelControls.Controls.Add(btnSolveCuttingPlane);
+            panelControls.Controls.Add(btnSolveKnapsack);
             panelControls.Controls.Add(btnExportResults);
 
             int padding = (panelControls.Width - (4 * 120 + 3 * 10)) / 2;
             btnLoadProblem.Left = padding;
             btnSolvePrimal.Left = btnLoadProblem.Right + 10;
             btnSolveRevised.Left = btnSolvePrimal.Right + 10;
-            btnExportResults.Left = btnSolveRevised.Right + 10;
+            btnDualSimplex.Left = btnSolveRevised.Right + 10;
+            btnSolveBranchAndBound.Left = btnDualSimplex.Right + 10;
+            btnSolveCuttingPlane.Left = btnSolveBranchAndBound.Right + 10;
+            btnSolveKnapsack.Left = btnSolveCuttingPlane.Right + 10;
+            btnExportResults.Left = btnSolveKnapsack.Right + 10;
 
             int top = panelControls.Height / 2 - btnLoadProblem.Height / 2;
             btnLoadProblem.Top = top;
             btnSolvePrimal.Top = top;
             btnSolveRevised.Top = top;
+            btnDualSimplex.Top = top;
+            btnSolveBranchAndBound.Top = top;
+            btnSolveCuttingPlane.Top = top;
+            btnSolveKnapsack.Top = top;
             btnExportResults.Top = top;
         }
 
@@ -189,6 +221,9 @@ namespace LinearProgrammingSolver
                 var solution = solver.Solve(program);
 
                 txtSolutionOutput.Text += solution.ToString();
+
+                btnSolveBranchAndBound.Visible = true;
+
             }
             catch (Exception ex)
             {
@@ -222,7 +257,53 @@ namespace LinearProgrammingSolver
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // PART 3
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        private void BtnDualSimplex_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtProblemInput.Text))
+            {
+                MessageBox.Show("Please load a problem first.", "Warning",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
+            try
+            {
+                txtSolutionOutput.Text = "Running Dual Simplex algorithm...\n\n";
+
+                var program = LinearProgram.Parse(txtProblemInput.Text);
+                var solver = new DualSimplex();
+                var solution = solver.Solve(program);
+
+                txtSolutionOutput.Text += solution.ToString();
+
+                btnSolveBranchAndBound.Visible = true;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error solving problem: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        private void BtnSolveBranchAndBound_Click(object sender, EventArgs e)
+        {
+            
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        private void BtnSolveCuttingPlane_Click(object sender, EventArgs e)
+        {
+
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        private void BtnSolveKnapsack_Click(object sender, EventArgs e)
+        {
+
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
         private void BtnExportResults_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtSolutionOutput.Text))
