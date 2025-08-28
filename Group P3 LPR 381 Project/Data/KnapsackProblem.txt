@@ -1,0 +1,3 @@
+﻿max + 4 + 2 + 2 + 1 + 10
+weight + 12 + 2 + 1 + 1 + 4 <= 15
+bin bin bin bin bin

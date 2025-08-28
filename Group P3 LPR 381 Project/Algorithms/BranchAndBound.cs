@@ -8,12 +8,14 @@ namespace LinearProgrammingSolver.Algorithms
 {
     public class BranchAndBound : ISolver
     {
+        private readonly PrimalSimplex _primalSimplex;
         private readonly DualSimplex _dualSimplex;
         private int _subProblemCounter;
         private const double TOLERANCE = 1e-6;
 
         public BranchAndBound()
         {
+            _primalSimplex = new PrimalSimplex();
             _dualSimplex = new DualSimplex();
             _subProblemCounter = 0;
         }
@@ -21,9 +23,9 @@ namespace LinearProgrammingSolver.Algorithms
         public Solution Solve(LinearProgram program)
         {
             var solution = new Solution();
-            solution.AddMessage("Begin with Branch and Bound algorithm");
 
-            // Solve the initial problem using dual simplex
+            solution.AddStep("Canonical Form", FormatCanonicalForm(program));
+
             var initialSolution = _dualSimplex.Solve(program);
 
             // Check if the initial solution is infeasible or unbounded
@@ -67,8 +69,18 @@ namespace LinearProgrammingSolver.Algorithms
             var sb = new StringBuilder();
 
             // Sub-problem header
+            //if (!string.IsNullOrEmpty(subProblemPath))
+            //    sb.AppendLine($"Sub-problem {subProblemPath} started:");
+
+            // Sub-problem header
             if (!string.IsNullOrEmpty(subProblemPath))
+            {
                 sb.AppendLine($"Sub-problem {subProblemPath} started:");
+            }
+            else
+            {
+                sb.AppendLine("Primal Simplex Optimal Tableau:");
+            }
 
             // Display tableau
             sb.AppendLine(FormatTableau(currentSolution));
@@ -102,7 +114,9 @@ namespace LinearProgrammingSolver.Algorithms
             {
                 // Branching message for this sub-problem
                 sb.AppendLine($"Sub-problem {subProblemPath} will be branched on variable {fractionalVar.Item1} = {fractionalVar.Item2:F3}");
+
                 mainSolution.AddStep($"Sub-problem {subProblemPath}", sb.ToString());
+
             }
 
             string varName = fractionalVar.Item1;
@@ -218,7 +232,7 @@ namespace LinearProgrammingSolver.Algorithms
         private string FormatTableau(Solution solution)
         {
             if (solution.FinalTableau == null)
-                return "Tableau not available";
+               return "Tableau not available";
 
             var sb = new StringBuilder();
             int rows = solution.FinalTableau.GetLength(0);
@@ -242,7 +256,7 @@ namespace LinearProgrammingSolver.Algorithms
                 if (i == 0)
                     sb.Append("z\t");
                 else
-                    sb.Append($"{i}\t");
+                    sb.Append($"Con {i}\t");
 
                 for (int j = 0; j < cols; j++)
                 {
@@ -260,42 +274,76 @@ namespace LinearProgrammingSolver.Algorithms
 
         private string FormatValue(double value)
         {
-            if (Math.Abs(value - Math.Round(value)) < TOLERANCE)
-                return Math.Round(value).ToString();
+            if (Math.Abs(value) < TOLERANCE)
+                value = 0;
 
-            // Check if it's a simple fraction
-            for (int denominator = 2; denominator <= 20; denominator++)
-            {
-                double numerator = value * denominator;
-                if (Math.Abs(numerator - Math.Round(numerator)) < TOLERANCE)
-                {
-                    int num = (int)Math.Round(numerator);
-                    if (num != 0 && Math.Abs(num) < denominator * 10) // Reasonable fraction
-                    {
-                        int gcd = FindGCD(Math.Abs(num), denominator);
-                        num /= gcd;
-                        int den = denominator / gcd;
-
-                        if (den == 1)
-                            return num.ToString();
-                        else
-                            return $"{num}/{den}";
-                    }
-                }
-            }
-
-            return value.ToString("F3");
+            return value.ToString("F3"); // Always decimal, 3 decimal places
         }
 
-        private int FindGCD(int a, int b)
+        private string FormatCanonicalForm(LinearProgram program)
         {
-            while (b != 0)
+            var sb = new StringBuilder();
+            sb.AppendLine("Canonical Form (with slack variables):");
+            sb.AppendLine();
+
+            // Objective function in canonical form: z - c1*x1 - c2*x2 - ... = 0
+            sb.Append("z");
+            for (int i = 0; i < program.Variables.Count; i++)
             {
-                int temp = b;
-                b = a % b;
-                a = temp;
+                double coeff = program.IsMaximization ? -program.Variables[i].Coefficient : program.Variables[i].Coefficient;
+                if (coeff >= 0)
+                    sb.Append($" + {coeff:F0}x{i + 1}");
+                else
+                    sb.Append($" - {Math.Abs(coeff):F0}x{i + 1}");
             }
-            return a;
+            sb.AppendLine(" = 0");
+            sb.AppendLine();
+
+            // Constraints in canonical form with slack variables
+            int slackIndex = 1;
+            for (int i = 0; i < program.Constraints.Count; i++)
+            {
+                var constraint = program.Constraints[i];
+
+                // Decision variables
+                bool first = true;
+                for (int j = 0; j < constraint.Coefficients.Count; j++)
+                {
+                    double coeff = constraint.Coefficients[j];
+                    if (first)
+                    {
+                        sb.Append($"{coeff:F0}x{j + 1}");
+                        first = false;
+                    }
+                    else
+                    {
+                        if (coeff >= 0)
+                            sb.Append($" + {coeff:F0}x{j + 1}");
+                        else
+                            sb.Append($" - {Math.Abs(coeff):F0}x{j + 1}");
+                    }
+                }
+
+                // Add slack/surplus variable based on constraint type
+                if (constraint.Relation == LinearProgram.Relation.LessThanOrEqual)
+                {
+                    sb.Append($" + s{slackIndex}");
+                    slackIndex++;
+                }
+                else if (constraint.Relation == LinearProgram.Relation.GreaterThanOrEqual)
+                {
+                    sb.Append($" - s{slackIndex}");
+                    slackIndex++;
+                }
+                // For equality constraints, no slack variable needed
+
+                sb.AppendLine($" = {constraint.Rhs:F0}");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("All variables >= 0");
+
+            return sb.ToString();
         }
     }
 }

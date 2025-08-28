@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static LinearProgrammingSolver.Models.LinearProgram;
 
 namespace LinearProgrammingSolver.Models
 {
@@ -9,11 +10,14 @@ namespace LinearProgrammingSolver.Models
         public bool IsMaximization { get; set; }
         public List<Variable> Variables { get; set; }
         public List<Constraint> Constraints { get; set; }
+        public bool isKnapsackProblem { get; set; }
+        public List<WeightConstraint> WeightConstraints { get; set; }
 
         public LinearProgram()
         {
             Variables = new List<Variable>();
             Constraints = new List<Constraint>();
+            WeightConstraints = new List<WeightConstraint>();
         }
 
         public static LinearProgram Parse(string input)
@@ -79,6 +83,39 @@ namespace LinearProgrammingSolver.Models
                 if (parts.Length < program.Variables.Count * 2 + 2)
                     throw new ArgumentException("Constraint line has insufficient values: " + line);
 
+                if (parts[0].Equals("weight", StringComparison.OrdinalIgnoreCase))
+                {
+                    program.isKnapsackProblem = true;
+                    var wc = new WeightConstraint();
+
+                    // Format: weight + 9 + 5 <= 50
+                    for (int i = 1; i <= program.Variables.Count * 2; i += 2)
+                    {
+                        string sign = parts[i];
+                        if (sign != "+" && sign != "-")
+                            throw new ArgumentException("Invalid sign '" + sign + "' in weight constraint");
+
+                        if (!double.TryParse(parts[i + 1], out double coeff))
+                            throw new ArgumentException("Invalid coefficient value '" + parts[i + 1] + "'");
+
+                        wc.Coefficients.Add(sign == "+" ? coeff : -coeff);
+                    }
+
+                    string relationToken = parts[program.Variables.Count * 2 + 1];
+                    if (relationToken != "<=")
+                        throw new ArgumentException("Knapsack constraint must be '<='");
+
+                    if (!double.TryParse(parts[program.Variables.Count * 2 + 2], out double capacity))
+                        throw new ArgumentException("Invalid RHS in weight constraint");
+
+                    wc.Capacity = capacity;
+                    program.WeightConstraints.Add(wc);
+                    continue; // don't add to normal LP constraints
+                }
+
+                if (parts.Length < program.Variables.Count * 2 + 2)
+                    throw new ArgumentException("Constraint line has insufficient values: " + line);
+
                 Constraint constraint = new Constraint();
 
                 for (int i = 0; i < program.Variables.Count; i++)
@@ -113,6 +150,18 @@ namespace LinearProgrammingSolver.Models
             }
         }
 
+        public class WeightConstraint
+        {
+            public List<double> Coefficients { get; set; }
+            public double Capacity { get; set; }
+
+            public WeightConstraint()
+            {
+                Coefficients = new List<double>();
+            }
+        }
+
+
         private static void ParseSignRestrictions(string line, LinearProgram program)
         {
             string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -140,16 +189,22 @@ namespace LinearProgrammingSolver.Models
             for (int i = 0; i < Variables.Count; i++)
             {
                 if (i > 0) result += " + ";
-                result += (Variables[i].Coefficient >= 0 ? Variables[i].Coefficient.ToString("F3") : "(" + Variables[i].Coefficient.ToString("F3") + ")")
+                result += (Variables[i].Coefficient >= 0
+                    ? Variables[i].Coefficient.ToString("F3")
+                    : "(" + Variables[i].Coefficient.ToString("F3") + ")")
                     + "x" + Variables[i].Index;
             }
 
             result += "\n\nSubject to:\n";
+
+            // Normal LP constraints
             for (int i = 0; i < Constraints.Count; i++)
             {
                 result += "  ";
                 for (int j = 0; j < Variables.Count; j++)
-                    result += (Constraints[i].Coefficients[j] >= 0 ? "+ " : "- ") + Math.Abs(Constraints[i].Coefficients[j]).ToString("F3") + "x" + Variables[j].Index + " ";
+                    result += (Constraints[i].Coefficients[j] >= 0 ? "+ " : "- ")
+                        + Math.Abs(Constraints[i].Coefficients[j]).ToString("F3")
+                        + "x" + Variables[j].Index + " ";
 
                 string op = "? ";
                 if (Constraints[i].Relation == Relation.LessThanOrEqual) op = "<= ";
@@ -157,6 +212,22 @@ namespace LinearProgrammingSolver.Models
                 if (Constraints[i].Relation == Relation.Equal) op = "= ";
 
                 result += op + Constraints[i].Rhs.ToString("F3") + "\n";
+            }
+
+            // Knapsack constraints
+            if (isKnapsackProblem && WeightConstraints.Any())
+            {
+                foreach (var wc in WeightConstraints)
+                {
+                    result += "  weight: ";
+                    for (int j = 0; j < wc.Coefficients.Count; j++)
+                    {
+                        result += (wc.Coefficients[j] >= 0 ? "+ " : "- ")
+                            + Math.Abs(wc.Coefficients[j]).ToString("F3")
+                            + "x" + (j + 1) + " ";
+                    }
+                    result += "<= " + wc.Capacity.ToString("F3") + "\n";
+                }
             }
 
             result += "\nWith:\n";
@@ -203,6 +274,46 @@ namespace LinearProgrammingSolver.Models
                 }).ToList()
             };
         }
+
+        public void AddConstraintWithSlackOrExcess(Constraint newConstraint)
+        {
+            Constraints.Add(newConstraint);
+
+            var extraVar = new Variable
+            {
+                Index = Variables.Count + 1,
+                Coefficient = 0,
+                Type = VariableType.NonNegative
+            };
+
+            Variables.Add(extraVar);
+
+            // Make sure all constraints have full coefficient length
+            foreach (var constraint in Constraints)
+            {
+                while (constraint.Coefficients.Count < Variables.Count)
+                {
+                    constraint.Coefficients.Add(0);
+                }
+            }
+
+            // Adjust the sign depending on relation
+            switch (newConstraint.Relation)
+            {
+                case Relation.LessThanOrEqual:
+                    newConstraint.Coefficients[Variables.Count - 1] = 1;  // Slack variable
+                    break;
+
+                case Relation.GreaterThanOrEqual:
+                    newConstraint.Coefficients[Variables.Count - 1] = -1; // Excess variable
+                    break;
+
+                case Relation.Equal:
+                    newConstraint.Coefficients[Variables.Count - 1] = 1;  // Artificial variable (Phase I required)
+                    break;
+            }
+        }
+
 
         public enum Relation { LessThanOrEqual, GreaterThanOrEqual, Equal }
         public enum VariableType { NonNegative, NonPositive, Unrestricted, Integer, Binary, Continuous }
