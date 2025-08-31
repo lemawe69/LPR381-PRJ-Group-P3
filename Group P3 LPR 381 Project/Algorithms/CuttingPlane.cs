@@ -67,10 +67,7 @@ namespace LinearProgrammingSolver.Algorithms
                 }
                 solution.AddStep($"Cut {cutIteration} Generation", cut.GenerationSteps);
 
-                // Add the cut to the program
-                currentProgram.Constraints.Add(cut.Constraint);
-
-                // Add new slack variable for the cut
+                // --- FIX: Add the new slack variable FIRST to avoid index/length mismatches ---
                 var slackVar = new LinearProgram.Variable
                 {
                     Index = currentProgram.Variables.Count + 1,
@@ -79,19 +76,26 @@ namespace LinearProgrammingSolver.Algorithms
                 };
                 currentProgram.Variables.Add(slackVar);
 
-                // Ensure all constraints have correct coefficient count
+                // Ensure all EXISTING constraints have coefficient lists long enough for the new variable
                 foreach (var constraint in currentProgram.Constraints)
                 {
                     while (constraint.Coefficients.Count < currentProgram.Variables.Count)
-                    {
                         constraint.Coefficients.Add(0);
-                    }
                 }
 
-                // Set slack variable coefficient in the new cut constraint
-                cut.Constraint.Coefficients[currentProgram.Variables.Count - 1] = 1;
+                // Make sure the cut constraint itself has the correct length
+                while (cut.Constraint.Coefficients.Count < currentProgram.Variables.Count)
+                    cut.Constraint.Coefficients.Add(0);
 
-                solution.AddMessage($"Added cut: {FormatConstraint(cut.Constraint, currentProgram.Variables.Count - 1)}");
+                // set the slack coefficient (last variable) = 1
+                int slackZeroBasedIndex = currentProgram.Variables.Count - 1;
+                cut.Constraint.Coefficients[slackZeroBasedIndex] = 1;
+
+                // Now add the cut constraint to the model
+                currentProgram.Constraints.Add(cut.Constraint);
+
+                // Use the 1-based slack index when formatting for human output
+                solution.AddMessage($"Added cut: {FormatConstraint(cut.Constraint, currentProgram.Variables.Count)}");
 
                 // Step 4: Solve the updated LP using dual simplex
                 currentSolution = _dualSimplex.Solve(currentProgram);
@@ -309,58 +313,69 @@ namespace LinearProgrammingSolver.Algorithms
             sb.AppendLine($"{rhsFractional:F3}");
             sb.AppendLine();
 
-            // Step 7: Create the cut constraint
+            // Step 7: Create the cut constraint (fractional part <= 0), canonicalized as equality with new slack
             sb.AppendLine("Step 4: Generate cut constraint (fractional part ≤ 0):");
             var cutConstraint = new LinearProgram.Constraint();
 
-            // Fix: Initialize coefficients for all variables including slack variables
+            // Initialize coefficients to the correct total length (all current decision vars + existing slacks)
             int totalVars = Math.Max(program.Variables.Count, fractionalParts.Count);
             for (int i = 0; i < totalVars; i++)
-            {
                 cutConstraint.Coefficients.Add(0);
-            }
 
             sb.Append("Cut: ");
             bool firstTerm = true;
 
-            // Set fractional parts for all variables including slack variables
+            // Build the left-hand fractional coefficients (only for non-basic variables considered)
             for (int j = 0; j < fractionalParts.Count; j++)
             {
-                if (Math.Abs(fractionalParts[j]) > TOLERANCE)
+                if (Math.Abs(fractionalParts[j]) <= TOLERANCE) continue;
+
+                string varName = (j < variableNames.Count) ? variableNames[j] : $"v{j + 1}";
+                if (!firstTerm)
                 {
-                    if (!firstTerm && fractionalParts[j] > 0) sb.Append(" + ");
-                    if (fractionalParts[j] < 0) sb.Append(" - ");
-                    else if (!firstTerm) sb.Append(" + ");
-                    sb.Append($"{Math.Abs(fractionalParts[j]):F3}{variableNames[j]}");
-                    if (j < cutConstraint.Coefficients.Count)
-                    {
-                        cutConstraint.Coefficients[j] = fractionalParts[j];
-                    }
-                    firstTerm = false;
+                    sb.Append(fractionalParts[j] > 0 ? " + " : " - ");
                 }
+                else if (fractionalParts[j] < 0)
+                {
+                    sb.Append("-");
+                }
+                sb.Append($"{Math.Abs(fractionalParts[j]):F3}{varName}");
+
+                // Set coefficient in the constraint vector (only if within bounds)
+                if (j < cutConstraint.Coefficients.Count)
+                    cutConstraint.Coefficients[j] = fractionalParts[j];
+
+                firstTerm = false;
             }
 
-            sb.AppendLine($" ≤ {-rhsFractional:F3}");
+            sb.AppendLine($" ≤ {rhsFractional:F3}");
             sb.AppendLine();
+
+            // Canonical form (add slack variable)
             sb.AppendLine("In canonical form with slack variable:");
             sb.Append("Cut: ");
             firstTerm = true;
-
             for (int j = 0; j < fractionalParts.Count; j++)
             {
-                if (Math.Abs(fractionalParts[j]) > TOLERANCE)
+                if (Math.Abs(fractionalParts[j]) <= TOLERANCE) continue;
+                string varName = (j < variableNames.Count) ? variableNames[j] : $"v{j + 1}";
+                if (!firstTerm)
                 {
-                    if (!firstTerm && fractionalParts[j] > 0) sb.Append(" + ");
-                    if (fractionalParts[j] < 0) sb.Append(" - ");
-                    else if (!firstTerm) sb.Append(" + ");
-                    sb.Append($"{Math.Abs(fractionalParts[j]):F3}{variableNames[j]}");
-                    firstTerm = false;
+                    sb.Append(fractionalParts[j] > 0 ? " + " : " - ");
                 }
+                else if (fractionalParts[j] < 0)
+                {
+                    sb.Append("-");
+                }
+                sb.Append($"{Math.Abs(fractionalParts[j]):F3}{varName}");
+                firstTerm = false;
             }
 
+            // The printed slack index is program.Variables.Count + 1 because we WILL add the slack before inserting the constraint
             sb.AppendLine($" + s{program.Variables.Count + 1} = {-rhsFractional:F3}");
 
-            cutConstraint.Relation = LinearProgram.Relation.Equal; // Changed to Equal since we're adding slack
+            // set relation and RHS on the constraint object (canonical equality)
+            cutConstraint.Relation = LinearProgram.Relation.Equal;
             cutConstraint.Rhs = -rhsFractional;
 
             cutInfo.Constraint = cutConstraint;
@@ -434,32 +449,38 @@ namespace LinearProgrammingSolver.Algorithms
             return onesCount == 1;
         }
 
-        private string FormatConstraint(LinearProgram.Constraint constraint, int slackVarIndex)
-        {
-            var sb = new StringBuilder();
-            bool first = true;
-            for (int i = 0; i < constraint.Coefficients.Count - 1; i++) // -1 to exclude the slack variable we just added
-            {
-                double coeff = constraint.Coefficients[i];
-                if (Math.Abs(coeff) > TOLERANCE)
-                {
-                    if (!first && coeff > 0) sb.Append(" + ");
-                    if (coeff < 0) sb.Append(" - ");
-                    else if (!first) sb.Append(" + ");
-                    sb.Append($"{Math.Abs(coeff):F3}x{i + 1}");
-                    first = false;
-                }
-            }
-            sb.Append($" + s{slackVarIndex} = {constraint.Rhs:F3}");
-            return sb.ToString();
-        }
+        private string FormatConstraint(LinearProgram.Constraint constraint, int variableCount)
+{
+    var sb = new StringBuilder();
+    bool first = true;
+
+    for (int i = 0; i < constraint.Coefficients.Count; i++)
+    {
+        double coeff = constraint.Coefficients[i];
+        if (Math.Abs(coeff) <= TOLERANCE) continue;
+
+        // Decide whether this is a decision or slack variable
+        string varName = i < variableCount ? $"x{i + 1}" : $"s{i - variableCount + 1}";
+
+        if (!first && coeff > 0) sb.Append(" + ");
+        if (coeff < 0) sb.Append(" - ");
+        else if (!first) sb.Append(" + ");
+
+        sb.Append($"{Math.Abs(coeff):F3}{varName}");
+        first = false;
+    }
+
+    sb.Append($" = {constraint.Rhs:F3}");
+    return sb.ToString();
+}
+
 
         public string FormatCanonicalForm(LinearProgram program)
         {
             var sb = new StringBuilder();
             sb.AppendLine("Canonical Form (with slack variables):");
 
-            // Objective function in canonical form: z - c1*x1 - c2*x2 - ... = 0
+            // Objective function in canonical form: z - c1*x1 - c2*x2 - . = 0
             sb.Append("z");
             for (int i = 0; i < program.Variables.Count; i++)
             {

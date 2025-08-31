@@ -18,6 +18,8 @@ namespace LinearProgrammingSolver
         private Button btnSolveBranchAndBound;
         private Button btnSolveCuttingPlane;
         private Button btnSolveKnapsack;
+        private Button btnSensitivtyAnalysis;
+        private Button btnDuality;
         private Button btnExportResults;
         private TextBox txtProblemInput;
         private RichTextBox txtSolutionOutput;
@@ -74,10 +76,12 @@ namespace LinearProgrammingSolver
             btnLoadProblem = new Button { Text = "Load Problem", Width = 120, TabIndex = 0 };
             btnSolvePrimal = new Button { Text = "Primal Simplex", Width = 120, TabIndex = 1 };
             btnSolveRevised = new Button { Text = "Revised Simplex", Width = 130, TabIndex = 2 };
-            btnSolveBranchAndBound = new Button { Text = "Branch and Bound Algorithm", Width = 250, TabIndex = 3 };
+            btnSolveBranchAndBound = new Button { Text = "Branch and Bound Algorithm", Width = 230, TabIndex = 3 };
             btnSolveCuttingPlane = new Button { Text = "Cutting Plane Algorithm", Width = 190, TabIndex = 4 };
-            btnSolveKnapsack = new Button { Text = "Branch and Bound Knapsack algorithm", Width = 300, TabIndex = 5 };
-            btnExportResults = new Button { Text = "Export Results", Width = 120, TabIndex = 6 };
+            btnSolveKnapsack = new Button { Text = "Knapsack Algorithm", Width = 200, TabIndex = 5 };
+            btnSensitivtyAnalysis = new Button { Text = "Sensitivity Analysis", Width = 180, TabIndex = 6 };
+            btnDuality = new Button { Text = "Duality", Width = 90, TabIndex = 7 };
+            btnExportResults = new Button { Text = "Export Results", Width = 120, TabIndex = 8 };
 
             openFileDialog = new OpenFileDialog
             {
@@ -115,17 +119,21 @@ namespace LinearProgrammingSolver
             panelControls.Controls.Add(btnSolveBranchAndBound);
             panelControls.Controls.Add(btnSolveCuttingPlane);
             panelControls.Controls.Add(btnSolveKnapsack);
+            panelControls.Controls.Add(btnSensitivtyAnalysis);
+            panelControls.Controls.Add(btnDuality);
             panelControls.Controls.Add(btnExportResults);
 
             //int padding = (panelControls.Width - (4 * 120 + 3 * 10)) / 2;
-            int padding = 80;
+            int padding = 40;
             btnLoadProblem.Left = padding;
             btnSolvePrimal.Left = btnLoadProblem.Right + 10;
             btnSolveRevised.Left = btnSolvePrimal.Right + 10;
             btnSolveBranchAndBound.Left = btnSolveRevised.Right + 10;
             btnSolveCuttingPlane.Left = btnSolveBranchAndBound.Right + 10;
             btnSolveKnapsack.Left = btnSolveCuttingPlane.Right + 10;
-            btnExportResults.Left = btnSolveKnapsack.Right + 10;
+            btnSensitivtyAnalysis.Left = btnSolveKnapsack.Right + 10;
+            btnDuality.Left = btnSensitivtyAnalysis.Right + 10;
+            btnExportResults.Left = btnDuality.Right + 10;
 
             int top = panelControls.Height / 2 - btnLoadProblem.Height / 2;
             btnLoadProblem.Top = top;
@@ -134,6 +142,8 @@ namespace LinearProgrammingSolver
             btnSolveBranchAndBound.Top = top;
             btnSolveCuttingPlane.Top = top;
             btnSolveKnapsack.Top = top;
+            btnSensitivtyAnalysis.Top = top;
+            btnDuality.Top = top;
             btnExportResults.Top = top;
         }
 
