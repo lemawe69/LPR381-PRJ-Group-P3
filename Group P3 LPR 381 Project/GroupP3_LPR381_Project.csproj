@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\BranchAndBound.cs" />
+    <Compile Include="Algorithms\ConstraintHandler.cs" />
     <Compile Include="Algorithms\CuttingPlane.cs" />
     <Compile Include="Algorithms\DualSimplex.cs" />
     <Compile Include="Algorithms\ISolver.cs" />

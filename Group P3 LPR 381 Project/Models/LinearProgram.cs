@@ -275,46 +275,6 @@ namespace LinearProgrammingSolver.Models
             };
         }
 
-        public void AddConstraintWithSlackOrExcess(Constraint newConstraint)
-        {
-            Constraints.Add(newConstraint);
-
-            var extraVar = new Variable
-            {
-                Index = Variables.Count + 1,
-                Coefficient = 0,
-                Type = VariableType.NonNegative
-            };
-
-            Variables.Add(extraVar);
-
-            // Make sure all constraints have full coefficient length
-            foreach (var constraint in Constraints)
-            {
-                while (constraint.Coefficients.Count < Variables.Count)
-                {
-                    constraint.Coefficients.Add(0);
-                }
-            }
-
-            // Adjust the sign depending on relation
-            switch (newConstraint.Relation)
-            {
-                case Relation.LessThanOrEqual:
-                    newConstraint.Coefficients[Variables.Count - 1] = 1;  // Slack variable
-                    break;
-
-                case Relation.GreaterThanOrEqual:
-                    newConstraint.Coefficients[Variables.Count - 1] = -1; // Excess variable
-                    break;
-
-                case Relation.Equal:
-                    newConstraint.Coefficients[Variables.Count - 1] = 1;  // Artificial variable (Phase I required)
-                    break;
-            }
-        }
-
-
         public enum Relation { LessThanOrEqual, GreaterThanOrEqual, Equal }
         public enum VariableType { NonNegative, NonPositive, Unrestricted, Integer, Binary, Continuous }
 

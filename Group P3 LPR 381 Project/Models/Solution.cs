@@ -20,18 +20,17 @@ namespace LinearProgrammingSolver.Models
 
         public Solution()
         {
-           VariableValues = new Dictionary<string, double>(); // Initialize to avoid null
-           Steps = new List<string>();
-           Messages = new List<string>();
-           IterationTableaux = new List<double[,]>();
-           IterationMessages = new List<string>();
-           VariableValues = null;
-           OptimalValue = 0;
-           FinalTableau = null;
-           VariableCount = 0;
-           SlackCount = 0;
-           ExcessCount = 0;
-           ArtificialCount = 0;
+            VariableValues = new Dictionary<string, double>();
+            Steps = new List<string>();
+            Messages = new List<string>();
+            IterationTableaux = new List<double[,]>();
+            IterationMessages = new List<string>();
+            OptimalValue = 0;
+            FinalTableau = null;
+            VariableCount = 0;
+            SlackCount = 0;
+            ExcessCount = 0;
+            ArtificialCount = 0;
         }
 
         public void AddStep(string title, string content)
