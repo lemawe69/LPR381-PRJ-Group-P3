@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupP3_LPR381_Project", "GroupP3_LPR381_Project.csproj", "{5E4C8674-EBB8-464C-A0AD-C31717A8DB2A}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "P3_LPR381_ExecutionProgram", "..\P3_LPR381_ExecutionProgram\P3_LPR381_ExecutionProgram.vdproj", "{1DED89BD-2D56-8E6D-FBD4-3D9E02506121}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{5E4C8674-EBB8-464C-A0AD-C31717A8DB2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E4C8674-EBB8-464C-A0AD-C31717A8DB2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E4C8674-EBB8-464C-A0AD-C31717A8DB2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DED89BD-2D56-8E6D-FBD4-3D9E02506121}.Debug|Any CPU.ActiveCfg = Debug
+		{1DED89BD-2D56-8E6D-FBD4-3D9E02506121}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
